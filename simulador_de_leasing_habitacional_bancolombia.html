@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full bg-slate-900 text-slate-100">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador de Leasing Habitacional & Planificador Financiero</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            navy: '#0f172a',
+                            card: '#1e293b',
+                            accent: '#f59e0b', // warm gold/yellow accent
+                            blue: '#3b82f6',
+                            emerald: '#10b981',
+                            rose: '#f43f5e'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+    </style>
+</head>
+<body class="h-full min-h-screen flex flex-col justify-between bg-slate-950 text-slate-100">
+
+    <header class="border-b border-slate-800 bg-slate-900/80 sticky top-0 z-50 backdrop-blur-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <div class="p-2.5 bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl shadow-lg shadow-amber-500/20">
+                    <i data-lucide="calculator" class="w-6 h-6 text-slate-950 stroke-[2.5]"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-tight text-white flex items-center gap-2">
+                        Simulador Leasing Habitacional
+                        <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20">Bancolombia</span>
+                    </h1>
+                    <p class="text-xs text-slate-400">Optimización de Plazo y Asesoría Financiera Personalizada</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-2 bg-slate-800/80 p-1.5 rounded-lg border border-slate-700/50 text-xs">
+                <span class="px-2 py-1 text-slate-400">Titular:</span>
+                <span class="font-medium text-amber-400">CARLOS ANDRES MUNERA PELAEZ</span>
+                <span class="text-slate-600">|</span>
+                <span class="text-slate-400">Op:</span>
+                <span class="font-mono text-slate-300">379214</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full space-y-8">
+
+        <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="glass-panel p-5 rounded-2xl flex flex-col justify-between border-l-4 border-l-amber-500">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Saldo de Capital Actual</p>
+                        <h3 id="display-capital" class="text-2xl font-extrabold text-white mt-1">$737.071.017</h3>
+                    </div>
+                    <div class="p-2 bg-amber-500/10 rounded-lg text-amber-400">
+                        <i data-lucide="dollar-sign" class="w-5 h-5"></i>
+                    </div>
+                </div>
+                <p class="text-xs text-slate-400 mt-3">Financiación inicial: <span class="text-slate-200">$1.000.000.000</span></p>
+            </div>
+
+            <div class="glass-panel p-5 rounded-2xl flex flex-col justify-between border-l-4 border-l-blue-500">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Tasa de Interés Vigente</p>
+                        <h3 id="display-tasa" class="text-2xl font-extrabold text-white mt-1">10.97% <span class="text-sm font-normal text-slate-400">E.A.</span></h3>
+                    </div>
+                    <div class="p-2 bg-blue-500/10 rounded-lg text-blue-400">
+                        <i data-lucide="percent" class="w-5 h-5"></i>
+                    </div>
+                </div>
+                <p class="text-xs text-slate-400 mt-3">Tasa Mensual Vencida (M.V.): <span id="display-tasa-mv" class="text-slate-200">0.871%</span></p>
+            </div>
+
+            <div class="glass-panel p-5 rounded-2xl flex flex-col justify-between border-l-4 border-l-emerald-500">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Plazo Restante</p>
+                        <h3 id="display-plazo" class="text-2xl font-extrabold text-white mt-1">114 <span class="text-sm font-normal text-slate-400">meses</span></h3>
+                    </div>
+                    <div class="p-2 bg-emerald-500/10 rounded-lg text-emerald-400">
+                        <i data-lucide="calendar" class="w-5 h-5"></i>
+                    </div>
+                </div>
+                <p class="text-xs text-slate-400 mt-3">Plazo Original: <span class="text-slate-200">120 meses (Mar 2026 - Sep 2036)</span></p>
+            </div>
+
+            <div class="glass-panel p-5 rounded-2xl flex flex-col justify-between border-l-4 border-l-purple-500">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Cuota Mensual Base Estimada</p>
+                        <h3 id="display-cuota-base" class="text-2xl font-extrabold text-amber-400 mt-1">$0</h3>
+                    </div>
+                    <div class="p-2 bg-purple-500/10 rounded-lg text-purple-400">
+                        <i data-lucide="credit-card" class="w-5 h-5"></i>
+                    </div>
+                </div>
+                <p class="text-xs text-slate-400 mt-3">Opción de compra final: <span class="text-slate-200">$10.000.000</span></p>
+            </div>
+        </section>
+
+        <section class="glass-panel p-6 rounded-2xl border border-slate-700/50 shadow-xl">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+                <div>
+                    <div class="flex items-center gap-2">
+                        <i data-lucide="compass" class="w-6 h-6 text-amber-400"></i>
+                        <h2 class="text-lg font-bold text-white">Asesoría Estratégica: Metas de Salida Anticipada</h2>
+                    </div>
+                    <p class="text-xs text-slate-400 mt-1">
+                        ¿Cuánto necesitas aportar mensualmente adicional para liberarte de la hipoteca/leasing en el tiempo que tú elijas?
+                    </p>
+                </div>
+                <div class="bg-amber-500/10 text-amber-300 border border-amber-500/30 text-xs px-3 py-1.5 rounded-lg flex items-center gap-2">
+                    <i data-lucide="sparkles" class="w-4 h-4"></i>
+                    Estrategia de Inteligencia Financiera
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- 5 Years Goal -->
+                <div id="card-goal-5" class="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 hover:border-amber-500/50 transition-all cursor-pointer relative overflow-hidden group">
+                    <div class="absolute top-0 right-0 bg-amber-500 text-slate-950 font-extrabold text-[10px] uppercase px-3 py-1 rounded-bl-lg">
+                        Muy Alcanzable
+                    </div>
+                    <p class="text-xs font-semibold text-slate-400 uppercase tracking-wide">Pagar en 5 Años (60 meses)</p>
+                    <div class="my-3">
+                        <span class="text-xs text-slate-400">Abono Extra Mensual Necesario:</span>
+                        <div id="target-extra-5" class="text-2xl font-black text-amber-400 mt-1">$0</div>
+                    </div>
+                    <div class="space-y-1.5 text-xs text-slate-300 pt-3 border-t border-slate-800">
+                        <div class="flex justify-between">
+                            <span class="text-slate-400">Cuota Total Mensual:</span>
+                            <span id="target-total-5" class="font-semibold text-white">$0</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-400">Ahorro en Intereses:</span>
+                            <span id="target-savings-5" class="font-bold text-emerald-400">$0</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-400">Meses Ahorrados:</span>
+                            <span id="target-months-5" class="font-semibold text-blue-400">54 meses</span>
+                        </div>
+                    </div>
+                    <button onclick="setSimulationTarget(60)" class="mt-4 w-full py-2 px-3 bg-slate-800 hover:bg-amber-500 hover:text-slate-950 text-slate-200 rounded-xl font-medium text-xs transition-colors flex items-center justify-center gap-2">
+                        Simular Escenario 5 Años <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+                    </button>
+                </div>
+
+                <!-- 3 Years Goal -->
+                <div id="card-goal-3" class="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 hover:border-amber-500/50 transition-all cursor-pointer relative overflow-hidden group">
+                    <div class="absolute top-0 right-0 bg-blue-500 text-slate-950 font-extrabold text-[10px] uppercase px-3 py-1 rounded-bl-lg">
+                        Acelerado
+                    </div>
+                    <p class="text-xs font-semibold text-slate-400 uppercase tracking-wide">Pagar en 3 Años (36 meses)</p>
+                    <div class="my-3">
+                        <span class="text-xs text-slate-400">Abono Extra Mensual Necesario:</span>
+                        <div id="target-extra-3" class="text-2xl font-black text-blue-400 mt-1">$0</div>
+                    </div>
+                    <div class="space-y-1.5 text-xs text-slate-300 pt-3 border-t border-slate-800">
+                        <div class="flex justify-between">
+                            <span class="text-slate-400">Cuota Total Mensual:</span>
+                            <span id="target-total-3" class="font-semibold text-white">$0</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-400">Ahorro en Intereses:</span>
+                            <span id="target-savings-3" class="font-bold text-emerald-400">$0</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-400">Meses Ahorrados:</span>
+                            <span id="target-months-3" class="font-semibold text-blue-400">78 meses</span>
+                        </div>
+                    </div>
+                    <button onclick="setSimulationTarget(36)" class="mt-4 w-full py-2 px-3 bg-slate-800 hover:bg-blue-500 hover:text-slate-950 text-slate-200 rounded-xl font-medium text-xs transition-colors flex items-center justify-center gap-2">
+                        Simular Escenario 3 Años <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+                    </button>
+                </div>
+
+                <!-- 2 Years Goal -->
+                <div id="card-goal-2" class="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 hover:border-amber-500/50 transition-all cursor-pointer relative overflow-hidden group">
+                    <div class="absolute top-0 right-0 bg-emerald-500 text-slate-950 font-extrabold text-[10px] uppercase px-3 py-1 rounded-bl-lg">
+                        Ultra Rápido
+                    </div>
+                    <p class="text-xs font-semibold text-slate-400 uppercase tracking-wide">Pagar en 2 Años (24 meses)</p>
+                    <div class="my-3">
+                        <span class="text-xs text-slate-400">Abono Extra Mensual Necesario:</span>
+                        <div id="target-extra-2" class="text-2xl font-black text-emerald-400 mt-1">$0</div>
+                    </div>
+                    <div class="space-y-1.5 text-xs text-slate-300 pt-3 border-t border-slate-800">
+                        <div class="flex justify-between">
+                            <span class="text-slate-400">Cuota Total Mensual:</span>
+                            <span id="target-total-2" class="font-semibold text-white">$0</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-400">Ahorro en Intereses:</span>
+                            <span id="target-savings-2" class="font-bold text-emerald-400">$0</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-400">Meses Ahorrados:</span>
+                            <span id="target-months-2" class="font-semibold text-blue-400">90 meses</span>
+                        </div>
+                    </div>
+                    <button onclick="setSimulationTarget(24)" class="mt-4 w-full py-2 px-3 bg-slate-800 hover:bg-emerald-500 hover:text-slate-950 text-slate-200 rounded-xl font-medium text-xs transition-colors flex items-center justify-center gap-2">
+                        Simular Escenario 2 Años <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Left Controls Column -->
+            <div class="space-y-6 lg:col-span-1">
+                <div class="glass-panel p-6 rounded-2xl border border-slate-700/50 space-y-5">
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                        <h2 class="text-base font-bold text-white flex items-center gap-2">
+                            <i data-lucide="sliders" class="w-5 h-5 text-amber-400"></i>
+                            Parámetros del Simulador
+                        </h2>
+                        <button onclick="resetInputs()" class="text-xs text-slate-400 hover:text-amber-400 flex items-center gap-1">
+                            <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Restablecer
+                        </button>
+                    </div>
+
+                    <!-- Input Capital -->
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Saldo de Capital Actual (COP)</label>
+                        <div class="relative">
+                            <span class="absolute left-3 top-2.5 text-slate-500 text-sm">$</span>
+                            <input type="text" id="input-capital" value="737.071.017" oninput="formatCurrencyInput(this)" class="w-full bg-slate-900 border border-slate-700 rounded-xl py-2 pl-7 pr-3 text-sm text-white font-semibold focus:outline-none focus:border-amber-500">
+                        </div>
+                    </div>
+
+                    <!-- Input Tasa -->
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-300 mb-1">Tasa Anual (% E.A.)</label>
+                            <input type="number" step="0.01" id="input-tasa" value="10.97" onchange="runSimulation()" class="w-full bg-slate-900 border border-slate-700 rounded-xl py-2 px-3 text-sm text-white font-semibold focus:outline-none focus:border-amber-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-300 mb-1">Plazo Restante (Meses)</label>
+                            <input type="number" id="input-plazo" value="114" onchange="runSimulation()" class="w-full bg-slate-900 border border-slate-700 rounded-xl py-2 px-3 text-sm text-white font-semibold focus:outline-none focus:border-amber-500">
+                        </div>
+                    </div>
+
+                    <!-- Abono Recurrente Mensual -->
+                    <div class="pt-2 border-t border-slate-800">
+                        <label class="block text-xs font-semibold text-amber-400 mb-1">Abono Extra Mensual Recurrente</label>
+                        <div class="relative mb-2">
+                            <span class="absolute left-3 top-2.5 text-slate-500 text-sm">$</span>
+                            <input type="text" id="input-abono-mensual" value="3.000.000" oninput="formatCurrencyInput(this)" class="w-full bg-slate-900 border border-amber-500/40 rounded-xl py-2 pl-7 pr-3 text-sm text-white font-extrabold focus:outline-none focus:border-amber-500">
+                        </div>
+                        <input type="range" id="slider-abono-mensual" min="0" max="25000000" step="500000" value="3000000" oninput="syncSliderToInput(this.value)" class="w-full accent-amber-500 bg-slate-800 rounded-lg h-2 cursor-pointer">
+                        <div class="flex justify-between text-[10px] text-slate-500 mt-1">
+                            <span>$0</span>
+                            <span>$10M</span>
+                            <span>$25M</span>
+                        </div>
+                    </div>
+
+                    <!-- Abonos Extraordinarios Puntuales (Inyecciones de Capital) -->
+                    <div class="pt-2 border-t border-slate-800 space-y-3">
+                        <div class="flex items-center justify-between">
+                            <label class="text-xs font-semibold text-blue-400">Inyección de Capital Extra Puntual</label>
+                            <span class="text-[10px] text-slate-400">(Ej: Primas, Cesantías, Bonos)</span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <span class="text-[10px] text-slate-400">Monto Inyección ($)</span>
+                                <input type="text" id="input-puntual-monto" placeholder="Ej: 20.000.000" oninput="formatCurrencyInput(this)" class="w-full bg-slate-900 border border-slate-700 rounded-xl py-1.5 px-3 text-xs text-white">
+                            </div>
+                            <div>
+                                <span class="text-[10px] text-slate-400">En el mes N°</span>
+                                <input type="number" id="input-puntual-mes" value="6" min="1" max="114" class="w-full bg-slate-900 border border-slate-700 rounded-xl py-1.5 px-3 text-xs text-white">
+                            </div>
+                        </div>
+                        <button onclick="addPuntualPayment()" class="w-full py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-xl text-xs font-medium text-slate-200 transition-colors flex items-center justify-center gap-1">
+                            <i data-lucide="plus-circle" class="w-3.5 h-3.5 text-blue-400"></i> Añadir Inyección
+                        </button>
+                        <div id="list-puntuales" class="space-y-1.5 max-h-32 overflow-y-auto custom-scrollbar">
+                            <!-- Dynamic items -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Financial Advisor Advisory Notes -->
+                <div class="glass-panel p-5 rounded-2xl border border-slate-700/50 bg-gradient-to-br from-slate-900/90 to-amber-950/20">
+                    <div class="flex items-center gap-2 mb-3 text-amber-400">
+                        <i data-lucide="lightbulb" class="w-5 h-5"></i>
+                        <h3 class="text-sm font-bold text-white">Recomendación de tu Asesor</h3>
+                    </div>
+                    <ul class="text-xs space-y-2.5 text-slate-300 leading-relaxed">
+                        <li class="flex items-start gap-2">
+                            <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-400 shrink-0 mt-0.5"></i>
+                            <span><b>Reducción de Plazo vs. Cuota:</b> Al mantener tu cuota mensual y aportar al capital, eliminas los intereses futuros de los meses acortados, logrando un ahorro multiplicado exponencialmente.</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-400 shrink-0 mt-0.5"></i>
+                            <span><b>Efecto Nieve en Tasa 10.97%:</b> Al ser una tasa fija en Leasing, cada peso abonado hoy te ahorra exactamente el 10.97% efectivo anual durante todos los años restantes.</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-400 shrink-0 mt-0.5"></i>
+                            <span><b>Aprovecha Cuentas AFC / Cesantías:</b> Puedes canalizar primas y cesantías directamente sin retención en la fuente para acelerar el plazo aún más rápido.</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="lg:col-span-2 space-y-6">
+
+                <!-- Comparison Summary Panel -->
+                <div class="glass-panel p-6 rounded-2xl border border-slate-700/50">
+                    <h2 class="text-base font-bold text-white mb-4 flex items-center gap-2">
+                        <i data-lucide="bar-chart-3" class="w-5 h-5 text-amber-400"></i>
+                        Resultados de la Simulación Actual
+                    </h2>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+                        <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-800">
+                            <span class="text-xs text-slate-400">Nuevo Plazo Estimado</span>
+                            <div id="sim-nuevo-plazo" class="text-2xl font-black text-amber-400 mt-1">0 meses</div>
+                            <span id="sim-tiempo-reducido" class="text-xs text-emerald-400 font-medium">Reducción de 0 años</span>
+                        </div>
+
+                        <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-800">
+                            <span class="text-xs text-slate-400">Ahorro Total en Intereses</span>
+                            <div id="sim-ahorro-interes" class="text-2xl font-black text-emerald-400 mt-1">$0</div>
+                            <span class="text-xs text-slate-500">Dinero retenido en tu bolsillo</span>
+                        </div>
+
+                        <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-800">
+                            <span class="text-xs text-slate-400">Fecha de Liquidación Final</span>
+                            <div id="sim-fecha-fin" class="text-lg font-bold text-blue-400 mt-1">--</div>
+                            <span id="sim-fecha-original" class="text-xs text-slate-500">Original: Sep 2036</span>
+                        </div>
+                    </div>
+
+                    <!-- Chart Container -->
+                    <div class="relative h-72 w-full pt-2">
+                        <canvas id="amortizationChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Detailed Table Tab Toggle & Table -->
+                <div class="glass-panel p-6 rounded-2xl border border-slate-700/50">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
+                        <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                            <i data-lucide="table" class="w-4 h-4 text-amber-400"></i>
+                            Tabla Comparativa de Amortización (Primeros 36 meses / Escenario)
+                        </h3>
+                        <span class="text-xs text-slate-400">Muestra en tiempo real la aceleración de capital</span>
+                    </div>
+
+                    <div class="overflow-x-auto rounded-xl border border-slate-800 max-h-80 custom-scrollbar">
+                        <table class="w-full text-left text-xs text-slate-300">
+                            <thead class="bg-slate-900 text-slate-400 uppercase font-semibold text-[10px] sticky top-0 z-10">
+                                <tr>
+                                    <th class="p-3">Mes</th>
+                                    <th class="p-3">Saldo Inicial</th>
+                                    <th class="p-3">Interés</th>
+                                    <th class="p-3">Capital Base</th>
+                                    <th class="p-3 text-amber-400">Abono Extra</th>
+                                    <th class="p-3 text-emerald-400">Amort. Total</th>
+                                    <th class="p-3">Saldo Final</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-amortization-body" class="divide-y divide-slate-800 bg-slate-950/40 font-mono">
+                                <!-- Dynamic Rows -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-800 bg-slate-900/60 py-4 mt-8">
+        <div class="max-w-7xl mx-auto px-4 text-center text-xs text-slate-500 flex flex-col sm:flex-row justify-between items-center gap-2">
+            <p>© 2026 Asesor Financiero Personal - Simulación basada en Leasing Habitacional Bancolombia Op. 379214</p>
+            <p class="text-slate-400">Los valores son estimaciones matemáticas aproximadas sujetas a seguros y variaciones reglamentarias de la entidad.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Global State & Inputs
+        let chartInstance = null;
+        let puntualPayments = [];
+
+        // Parse input value into clean integer
+        function parseCurrency(str) {
+            if (!str) return 0;
+            return parseInt(str.toString().replace(/\D/g, '')) || 0;
+        }
+
+        // Format integer to COP format ($ XXX.XXX.XXX)
+        function formatCOP(amount) {
+            return '$' + Math.round(amount).toLocaleString('es-CO');
+        }
+
+        // Format currency input element
+        function formatCurrencyInput(input) {
+            let value = parseCurrency(input.value);
+            if (value === 0 && input.value !== '0' && input.value !== '') {
+                // leave blank if user is clearing
+            } else {
+                input.value = value.toLocaleString('es-CO');
+            }
+            runSimulation();
+        }
+
+        function syncSliderToInput(val) {
+            document.getElementById('input-abono-mensual').value = parseInt(val).toLocaleString('es-CO');
+            runSimulation();
+        }
+
+        function addPuntualPayment() {
+            const montoInput = document.getElementById('input-puntual-monto');
+            const mesInput = document.getElementById('input-puntual-mes');
+
+            const monto = parseCurrency(montoInput.value);
+            const mes = parseInt(mesInput.value);
+
+            if (monto > 0 && mes > 0 && mes <= 120) {
+                puntualPayments.push({ id: Date.now(), mes: mes, monto: monto });
+                montoInput.value = '';
+                renderPuntualPaymentsList();
+                runSimulation();
+            }
+        }
+
+        function removePuntualPayment(id) {
+            puntualPayments = puntualPayments.filter(item => item.id !== id);
+            renderPuntualPaymentsList();
+            runSimulation();
+        }
+
+        function renderPuntualPaymentsList() {
+            const listEl = document.getElementById('list-puntuales');
+            listEl.innerHTML = '';
+
+            puntualPayments.sort((a,b) => a.mes - b.mes).forEach(item => {
+                const div = document.createElement('div');
+                div.className = "flex justify-between items-center bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-800 text-xs";
+                div.innerHTML = `
+                    <span class="text-slate-300">Mes ${item.mes}: <b class="text-emerald-400">${formatCOP(item.monto)}</b></span>
+                    <button onclick="removePuntualPayment(${item.id})" class="text-slate-500 hover:text-rose-400">
+                        <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                    </button>
+                `;
+                listEl.appendChild(div);
+            });
+            lucide.createIcons();
+        }
+
+        function resetInputs() {
+            document.getElementById('input-capital').value = "737.071.017";
+            document.getElementById('input-tasa').value = "10.97";
+            document.getElementById('input-plazo').value = "114";
+            document.getElementById('input-abono-mensual').value = "3.000.000";
+            document.getElementById('slider-abono-mensual').value = "3000000";
+            puntualPayments = [];
+            renderPuntualPaymentsList();
+            runSimulation();
+        }
+
+        // Converts Effective Annual Rate (E.A.) to Monthly Rate (M.V.)
+        function getMonthlyRateEA(eaPercent) {
+            const ea = eaPercent / 100;
+            return Math.pow(1 + ea, 1 / 12) - 1;
+        }
+
+        // Calculate standard monthly base installment (PMT)
+        // P = Loan Amount, r = monthly rate, n = months, FV = purchase option ($10M)
+        function calculateMonthlyPMT(P, r, n, FV = 10000000) {
+            if (r === 0) return (P - FV) / n;
+            // PMT formula accounting for FV at month n:
+            // P = PMT * [ (1 - (1+r)^-n) / r ] + FV * (1+r)^-n
+            const pmt = (P - FV * Math.pow(1 + r, -n)) * (r / (1 - Math.pow(1 + r, -n)));
+            return pmt;
+        }
+
+        function calculateTargetGoals(capital, rateEA, remainingMonths) {
+            const r = getMonthlyRateEA(rateEA);
+            const basePMT = calculateMonthlyPMT(capital, r, remainingMonths);
+
+            const targets = [
+                { id: 5, months: 60 },
+                { id: 3, months: 36 },
+                { id: 2, months: 24 }
+            ];
+
+            targets.forEach(target => {
+                if (target.months >= remainingMonths) return;
+
+                // PMT needed for target timeframe
+                const targetPMT = calculateMonthlyPMT(capital, r, target.months);
+                const extraNeeded = Math.max(0, targetPMT - basePMT);
+
+                // Baseline total interest for target months vs baseline
+                let baseInterestTotal = 0;
+                let tempBalance = capital;
+                for(let m=1; m<=remainingMonths; m++) {
+                    let interest = tempBalance * r;
+                    let cap = basePMT - interest;
+                    tempBalance -= cap;
+                    baseInterestTotal += interest;
+                }
+
+                let targetInterestTotal = 0;
+                tempBalance = capital;
+                for(let m=1; m<=target.months; m++) {
+                    let interest = tempBalance * r;
+                    let cap = targetPMT - interest;
+                    tempBalance -= cap;
+                    targetInterestTotal += interest;
+                }
+
+                const savings = Math.max(0, baseInterestTotal - targetInterestTotal);
+                const monthsSaved = remainingMonths - target.months;
+
+                document.getElementById(`target-extra-${target.id}`).innerText = formatCOP(extraNeeded);
+                document.getElementById(`target-total-${target.id}`).innerText = formatCOP(targetPMT);
+                document.getElementById(`target-savings-${target.id}`).innerText = formatCOP(savings);
+                document.getElementById(`target-months-${target.id}`).innerText = `${monthsSaved} meses (${(monthsSaved/12).toFixed(1)} años)`;
+            });
+        }
+
+        function setSimulationTarget(months) {
+            const capital = parseCurrency(document.getElementById('input-capital').value);
+            const rateEA = parseFloat(document.getElementById('input-tasa').value);
+            const remainingMonths = parseInt(document.getElementById('input-plazo').value);
+            const r = getMonthlyRateEA(rateEA);
+
+            const basePMT = calculateMonthlyPMT(capital, r, remainingMonths);
+            const targetPMT = calculateMonthlyPMT(capital, r, months);
+            const extraNeeded = Math.max(0, targetPMT - basePMT);
+
+            document.getElementById('input-abono-mensual').value = Math.round(extraNeeded).toLocaleString('es-CO');
+            document.getElementById('slider-abono-mensual').value = Math.min(25000000, Math.round(extraNeeded));
+            runSimulation();
+        }
+
+        function runSimulation() {
+            const capital = parseCurrency(document.getElementById('input-capital').value);
+            const rateEA = parseFloat(document.getElementById('input-tasa').value);
+            const remainingMonths = parseInt(document.getElementById('input-plazo').value);
+            const extraMonthly = parseCurrency(document.getElementById('input-abono-mensual').value);
+
+            const r = getMonthlyRateEA(rateEA);
+            const rateMVPercent = (r * 100).toFixed(3);
+
+            // Update Header Display Cards
+            document.getElementById('display-capital').innerText = formatCOP(capital);
+            document.getElementById('display-tasa').innerHTML = `${rateEA}% <span class="text-sm font-normal text-slate-400">E.A.</span>`;
+            document.getElementById('display-tasa-mv').innerText = `${rateMVPercent}%`;
+            document.getElementById('display-plazo').innerHTML = `${remainingMonths} <span class="text-sm font-normal text-slate-400">meses</span>`;
+
+            const basePMT = calculateMonthlyPMT(capital, r, remainingMonths);
+            document.getElementById('display-cuota-base').innerText = formatCOP(basePMT);
+
+            // Calculate Target Scenarios
+            calculateTargetGoals(capital, rateEA, remainingMonths);
+
+            // Simulate Baseline Amortization
+            let baselineBalance = capital;
+            let baselineSchedule = [];
+            let baselineTotalInterest = 0;
+
+            for (let m = 1; m <= remainingMonths; m++) {
+                let interest = baselineBalance * r;
+                let cap = basePMT - interest;
+                if (m === remainingMonths) {
+                    cap = baselineBalance - 10000000; // Leave Purchase Option $10M
+                }
+                baselineBalance -= cap;
+                baselineTotalInterest += interest;
+                baselineSchedule.push({
+                    month: m,
+                    balance: Math.max(0, baselineBalance),
+                    interest: interest,
+                    capitalPaid: cap
+                });
+            }
+
+            // Simulate Extra Payment Amortization (Reducción de Plazo)
+            let simBalance = capital;
+            let simSchedule = [];
+            let simTotalInterest = 0;
+            let actualMonths = 0;
+
+            for (let m = 1; m <= remainingMonths; m++) {
+                if (simBalance <= 10000000) break; // Reached purchase option balance
+
+                actualMonths++;
+                let interest = simBalance * r;
+                let baseCap = basePMT - interest;
+
+                // Check for single punctual lump sum payment in this month
+                let extraPuntual = 0;
+                const matchPuntual = puntualPayments.find(p => p.mes === m);
+                if (matchPuntual) {
+                    extraPuntual = matchPuntual.monto;
+                }
+
+                let totalExtra = extraMonthly + extraPuntual;
+                let totalCapitalPayment = baseCap + totalExtra;
+
+                // Don't overpay past purchase option ($10,000,000)
+                if (simBalance - totalCapitalPayment < 10000000) {
+                    totalCapitalPayment = simBalance - 10000000;
+                    totalExtra = Math.max(0, totalCapitalPayment - baseCap);
+                }
+
+                simBalance -= totalCapitalPayment;
+                simTotalInterest += interest;
+
+                simSchedule.push({
+                    month: m,
+                    startBalance: simBalance + totalCapitalPayment,
+                    interest: interest,
+                    baseCapital: baseCap,
+                    extraPayment: totalExtra,
+                    totalAmortization: totalCapitalPayment,
+                    endBalance: Math.max(0, simBalance)
+                });
+            }
+
+            // Results Metrics Update
+            const monthsSaved = remainingMonths - actualMonths;
+            const yearsSaved = (monthsSaved / 12).toFixed(1);
+            const interestSavings = Math.max(0, baselineTotalInterest - simTotalInterest);
+
+            document.getElementById('sim-nuevo-plazo').innerText = `${actualMonths} meses`;
+            document.getElementById('sim-tiempo-reducido').innerText = `Reducción de ${monthsSaved} meses (~${yearsSaved} años)`;
+            document.getElementById('sim-ahorro-interes').innerText = formatCOP(interestSavings);
+
+            // Calculate Project Finish Date
+            const startDate = new Date(2026, 8, 13); // Sept 2026 current
+            const endDate = new Date(startDate);
+            endDate.setMonth(endDate.getMonth() + actualMonths);
+
+            const monthNames = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
+            document.getElementById('sim-fecha-fin').innerText = `${monthNames[endDate.getMonth()]} ${endDate.getFullYear()}`;
+
+            // Render Amortization Table
+            renderAmortizationTable(simSchedule);
+
+            // Render Chart
+            renderChart(baselineSchedule, simSchedule, remainingMonths);
+        }
+
+        function renderAmortizationTable(schedule) {
+            const tbody = document.getElementById('table-amortization-body');
+            tbody.innerHTML = '';
+
+            const displayRows = schedule.slice(0, 48); // Show up to first 48 months for performance
+
+            displayRows.forEach(row => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-800/50 transition-colors";
+                tr.innerHTML = `
+                    <td class="p-3 font-bold text-white">${row.month}</td>
+                    <td class="p-3 text-slate-300">${formatCOP(row.startBalance)}</td>
+                    <td class="p-3 text-rose-400/90">${formatCOP(row.interest)}</td>
+                    <td class="p-3 text-slate-300">${formatCOP(row.baseCapital)}</td>
+                    <td class="p-3 text-amber-400 font-semibold">${row.extraPayment > 0 ? formatCOP(row.extraPayment) : '-'}</td>
+                    <td class="p-3 text-emerald-400 font-bold">${formatCOP(row.totalAmortization)}</td>
+                    <td class="p-3 text-slate-200 font-semibold">${formatCOP(row.endBalance)}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function renderChart(baselineSchedule, simSchedule, totalMonths) {
+            const ctx = document.getElementById('amortizationChart').getContext('2d');
+
+            const labels = [];
+            for (let i = 0; i <= totalMonths; i++) {
+                labels.push(`Mes ${i}`);
+            }
+
+            const baselineData = [baselineSchedule[0] ? baselineSchedule[0].startBalance || 737071017 : 737071017];
+            baselineSchedule.forEach(item => baselineData.push(item.balance));
+
+            const simData = [simSchedule[0] ? simSchedule[0].startBalance : 737071017];
+            simSchedule.forEach(item => simData.push(item.endBalance));
+
+            // Fill remaining array with $10M floor once finished
+            while (simData.length < labels.length) {
+                simData.push(10000000);
+            }
+
+            if (chartInstance) {
+                chartInstance.destroy();
+            }
+
+            chartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Estructura Original (114 Meses)',
+                            data: baselineData,
+                            borderColor: '#64748b',
+                            borderWidth: 2,
+                            borderDash: [5, 5],
+                            pointRadius: 0,
+                            fill: false,
+                            tension: 0.1
+                        },
+                        {
+                            label: 'Estructura Optimizada (Abonos Extra)',
+                            data: simData,
+                            borderColor: '#f59e0b',
+                            backgroundColor: 'rgba(245, 158, 11, 0.12)',
+                            borderWidth: 3,
+                            pointRadius: 0,
+                            fill: true,
+                            tension: 0.1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#94a3b8',
+                                font: { family: 'Inter', size: 11 }
+                            }
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + formatCOP(context.raw);
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { color: 'rgba(51, 65, 85, 0.3)' },
+                            ticks: { color: '#64748b', maxTicksLimit: 12, font: { size: 10 } }
+                        },
+                        y: {
+                            grid: { color: 'rgba(51, 65, 85, 0.3)' },
+                            ticks: {
+                                color: '#64748b',
+                                font: { size: 10 },
+                                callback: function(value) {
+                                    return '$' + (value / 1000000).toFixed(0) + 'M';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Initialize App on Window Load
+        window.onload = function() {
+            lucide.createIcons();
+            runSimulation();
+        };
+    </script>
+</body>
+</html>
